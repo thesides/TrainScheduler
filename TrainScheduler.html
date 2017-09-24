@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="UTF-8">
+  <title>Sign-Up Today!</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <br>
+
+    <!-- Jumbotron -->
+
+    <div class="jumbotron">
+      <h1 class="text-center">Employee Data Management</h1>
+      <h2 class="text-center">A Comprehensive Directory of Employee Billable Hours</h2>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped">
+            <!-- Title Row -->
+            <thead>
+              <tr class="active headerFont">
+                <td><strong>Name</strong></td>
+                <td><strong>Title</strong></td>
+                <td><strong>Start Date</strong></td>
+                <td><strong>Months Worked</strong></td>
+                <td><strong>Monthly Rate</strong></td>
+                <td><strong>Earnings to Date</strong></td>
+              </tr>
+            </thead>
+
+            <tbody id="employeeTable" class="table-responsive">
+
+             <!--  <tr>
+                <td id="name">...</td>
+                <td id="role" class="text-center">...</td>
+                <td id="start" class="text-center">DD/MM/YY</td>
+                <td id="monthsWorked" class="text-center">###</td>
+                <td id="rate" class="text-center">###</td>
+                <td id="earnings" class="text-center">###</td>
+              </tr> -->
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+
+      <!-- Sign-Up Panel-->
+      <div class="col-lg-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Add Employee</h3>
+          </div>
+          <div class="panel-body">
+
+            <!-- Sign-up Form (note the various input "types")-->
+            <form role="form">
+              <div class="form-group">
+                <label for="employee-input">Employee Name</label>
+                <input class="form-control" id="name-input" type="text">
+              </div>
+              <div class="form-group">
+                <label for="role-input">Role</label>
+                <input class="form-control" id="role-input" type="text">
+              </div>
+              <div class="form-group">
+                <label for="date-input">Start Date (DD/MM/YY - ex: 01/01/89)</label>
+                <input class="form-control" id="date-input" value="dd/mm/yy">
+              </div>
+              <div class="form-group">
+                <label for="rate-input">Monthly Rate</label>
+                <input class="form-control" id="rate-input" type="number">
+              </div>
+              <button class="btn btn-default" id="add-user" type="submit">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      
+      
+
+    </div>
+
+  </div>
+
+ <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery.js"></script>
+
+  <!-- LINK TO FIREBASE GOES HERE -->
+  <script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+  <script src="https://momentjs.com/downloads/moment.js"></script>
+
+  <!-- Script -->
+  <script>
+    //  START CODING BELOW!!
+
+    // Initialize Firebase
+   var config = {
+    apiKey: "AIzaSyBPlHPpuGxsKA1m07P5Cj03PdEstTNNg4g",
+    authDomain: "employee-timesheet-4d122.firebaseapp.com",
+    databaseURL: "https://employee-timesheet-4d122.firebaseio.com",
+    projectId: "employee-timesheet-4d122",
+    storageBucket: "",
+    messagingSenderId: "230888012375"
+  };
+
+  firebase.initializeApp(config);
+
+    // Create a variable to reference the database
+
+    var database = firebase.database();
+    var name = "";
+    var role = "";
+    var startDate = "";
+    var rate = "";
+
+
+    // Capture Button Click
+    $("#add-user").on("click", function() {
+      // Don't refresh the page!
+      event.preventDefault();
+
+
+      // YOUR TASK!!!
+      database.ref().push({
+        name: $("#name-input").val().trim(),
+        role: $("#role-input").val().trim(),
+        startDate: $("#date-input").val().trim(),
+        //monthsWorked: moment
+        rate: $("#rate-input").val().trim()
+
+      });
+
+      // Code in the logic for storing and retrieving the most recent user.
+
+      // Don't forget to handle the "initial load"
+
+    });
+
+
+    //Create Firebase "watcher" Hint: .on("value")
+    database.ref().on("child_added", function(snapshot){
+
+      console.log(snapshot.val());
+      console.log(snapshot.val().name);
+      console.log(snapshot.val().role);
+      console.log(snapshot.val().startDate);
+      console.log(snapshot.val().rate);
+
+
+      // $("#name").text($("#name-input").val().trim())
+      // $("#role").text($("#role-input").val().trim())
+      // $("#start").text($("#date-input").val().trim())
+      // $("#rate").text($("#rate-input").val().trim())
+
+      var name = snapshot.val().name;
+      var role = snapshot.val().role;
+      var start = snapshot.val().startDate;
+
+      var rate = snapshot.val().rate;
+
+      //var randomFormat = "MM/DD/YY"
+      var convertedDate = moment(snapshot.val().startDate).format("MM/DD/YYYY");
+      var conversion = (moment(convertedDate).diff(moment(), "months"));
+
+      var workHistory = -conversion;
+
+      var earnings = snapshot.val().rate * moment(snapshot.val().startDate).fromNow();
+      
+      $("#employeeTable").append($("<tr><td>" + name + "</td><td>" + role + "</td><td>" + start + "</td><td>" + workHistory + "</td><td>" + rate + "</td><td>" + earnings + "</td></tr>"));
+
+    });
+
+
+    // Create Error Handling
+  </script>
+
+</body>
+
+</html>
